@@ -2,9 +2,9 @@ var express=require('express');
 var app=express();
 var fs = require('fs');
 var socket=require('socket.io');
-var server=app.listen(process.env.PORT || 5000,function()
+var server=app.listen(process.env.PORT || 3000,function()
 {
-console.log("Server Started at Port "+process.env.PORT || 5000);
+console.log("Server Started at Port "+process.env.PORT || 3000);
 });
 
 //
@@ -20,8 +20,10 @@ app.get('/merchant/:name', function(req, res){
 							try{
 							dt=obj[req.params.name];
 							dt.forEach(function(daataa, index, object) {
+								if (req.params.name != daataa.user)
+								{
 								st_data+=`<a target='_blank' href='/?user=${req.params.name}&key=${daataa.key}&merchant=${req.params.name}'>${daataa.user}</a></br>`;
-							
+								}
 							})
 							//console.log(st_data);
 							var html = "<!DOCTYPE html>\n<html>\n    <head>\n    </head>\n <body>\n      <h1>"+req.params.name+"</h1>\n</br>"+st_data+"</body>\n</html>";
@@ -162,6 +164,7 @@ socket.on('typing',function(data)
 			}
 			else
 			{
+				/*
 				obj = JSON.parse(data);
 				dt=obj[userM];
 				dt.forEach(function(daataa, index, object) {
@@ -174,6 +177,7 @@ socket.on('typing',function(data)
 						console.log("now..");
 						console.log(dt);
 				//console.log(obj[userM]);
+			*/
 			}
 		
 		});
