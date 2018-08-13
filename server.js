@@ -2,9 +2,13 @@ var express=require('express');
 var app=express();
 var fs = require('fs');
 var socket=require('socket.io');
-var server=app.listen(process.env.PORT || 3000,function()
+var path = require("path");
+
+app.set('view engine', 'ejs');
+
+var server=app.listen(process.env.PORT || 5000,function()
 {
-console.log("Server Started at Port "+process.env.PORT || 3000);
+console.log("Server Started at Port "+process.env.PORT || 5000);
 });
 
 //
@@ -20,31 +24,30 @@ app.get('/merchant/:name', function(req, res){
 							try{
 							dt=obj[req.params.name];
 							dt.forEach(function(daataa, index, object) {
-								if (req.params.name != daataa.user)
-								{
-								st_data+=`<a target='_blank' href='/?user=${req.params.name}&key=${daataa.key}&merchant=${req.params.name}'>${daataa.user}</a></br>`;
-								}
-							})
+								})
 							//console.log(st_data);
 							var html = "<!DOCTYPE html>\n<html>\n    <head>\n    </head>\n <body>\n      <h1>"+req.params.name+"</h1>\n</br>"+st_data+"</body>\n</html>";
-							res.send(html);
+							//res.send(html);
+							res.render('inbox', {
+        dt: dt,
+		name: req.params.name,
+    });
 							}
 							catch (err)
 							{
+								
 							var html = "<!DOCTYPE html>\n<html>\n    <head>\n    </head>\n <body>\n      <h1>"+req.params.name+"</h1>\n</br>"+"No Chat For You"+"</body>\n</html>";
 							res.send(html);
+							//res.sendFile(path.join(__dirname+'/inbox.html'));
+							
+	
+							
 							}
 						}
 					
 					});	
 	
-	
-	
-	//console.log(st_data);
-	
-	//console.log(html);
-   
-   //res.sendFile(path.join(__dirname + '/merchant.html'));
+
 });
 
 //Static Files
@@ -59,6 +62,7 @@ io.on('connection',function(socket)
 var userKey;
 var userM;
 console.log("Socket Connected");
+var d = new Date().toLocaleString(); 
 
 var gp="Public";
 //Creating New Group and adding this socket to it
@@ -82,7 +86,7 @@ var gp="Public";
 			if (err){
 				//console.log(err);
 				var obj = {};
-				obj[mr]=[{user: group.name, key:group.rm}];
+				obj[mr]=[{user: group.name, key:group.rm ,tyme: d}];
 				var json = JSON.stringify(obj);
 				fs.writeFile('myjsonfile.json', json, 'utf8',function(err){
         console.log("Error :", err );
@@ -92,10 +96,10 @@ var gp="Public";
 			else {
 		obj = JSON.parse(data); //now it an object
 		try{
-		obj[mr].push({user: group.name, key:group.rm});
+		obj[mr].push({user: group.name, key:group.rm, tyme: d });
 		}
 		catch (err){
-			obj[mr]=[{user: group.name, key:group.rm}];
+			obj[mr]=[{user: group.name, key:group.rm , tyme: d}];
 		}
 		var json = JSON.stringify(obj);
     fs.writeFile('myjsonfile.json', json, 'utf8',function(err){
@@ -164,20 +168,28 @@ socket.on('typing',function(data)
 			}
 			else
 			{
-				/*
 				obj = JSON.parse(data);
+				try{
 				dt=obj[userM];
 				dt.forEach(function(daataa, index, object) {
 						if (daataa.key == userKey)
 						{
 							object.splice(index, 1);
+							//break;
 						}
 							//console.log("dada: "+daataa.key);
 						});
-						console.log("now..");
-						console.log(dt);
+				
+				//save after removing user
+				}
+				catch (err)
+				{
+					console.log(err);
+				}
+				
+						//console.log("now..");
+						//console.log(dt);
 				//console.log(obj[userM]);
-			*/
 			}
 		
 		});

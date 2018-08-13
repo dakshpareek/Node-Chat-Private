@@ -47,7 +47,7 @@ socket.emit('neww',naam);
 //Getting Name on New
 socket.on('neww',function(data)
 {
-neww.innerHTML = data + " is connected </br>";
+neww.innerHTML = data + " is connected to help you. </br>";
 })
 
 //Emiting Event
@@ -64,11 +64,31 @@ message.value="";
 });
 
 //Handling Event
+var chk=0;
 socket.on('chat',function(data)
 {
-    tipe.innerHTML = "";
+
+	htmR='<div class="incoming_msg"><div class="received_msg"><div class="received_withd_msg">';
+	var d = new Date().toLocaleString(); 
+	msgR='<p>'+ data.message +'</p><div class="incoming_msg_img"> '+ data.name +' </div></div></div>';
+	addR='</div>';
+	htmS='<div class="outgoing_msg"><div class="sent_msg">';
+	
+	tipe.innerHTML = "";
     neww.innerHTML = "";
-    output.innerHTML += "<b>"+ data.name +" :</b> " + data.message + "</br> ";
+	if (chk == data.name)
+	{
+		output.innerHTML += htmR+msgR+addR ;
+		chk=data.name;
+	}
+	else
+	{
+		output.innerHTML += htmS+msgR;
+		chk=data.name;
+	}
+    
+    //output.innerHTML += "<b>"+ data.name +" :</b> " + data.message + "</br> ";
+
 })
 
 //Typing Function
