@@ -3,6 +3,8 @@ var app=express();
 var fs = require('fs');
 var socket=require('socket.io');
 var path = require("path");
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
@@ -14,6 +16,8 @@ console.log("Server Started at Port "+process.env.PORT || 5000);
 //
 app.get('/merchant/:name', function(req, res){
 	st_data="";
+	//console.log("Here is Cookies");
+	//console.log(req.cookies);
 	//check how many chat requests are there
 			fs.readFile('myjsonfile.json', 'utf8', function readFileCallback(err, data){
 						if (err){
@@ -25,8 +29,10 @@ app.get('/merchant/:name', function(req, res){
 							dt=obj[req.params.name];
 							dt.forEach(function(daataa, index, object) {
 								})
+							dt.reverse();
 							//console.log(st_data);
 							var html = "<!DOCTYPE html>\n<html>\n    <head>\n    </head>\n <body>\n      <h1>"+req.params.name+"</h1>\n</br>"+st_data+"</body>\n</html>";
+							
 							//res.send(html);
 							res.render('inbox', {
         dt: dt,
@@ -49,6 +55,109 @@ app.get('/merchant/:name', function(req, res){
 	
 
 });
+//live available users
+values=[];
+function check_key(ki)
+{
+	val=false;
+	
+	try{
+	data1=fs.readFileSync('offline.json', 'utf8');
+	obj1 = JSON.parse(data1);
+	try{
+	dt1=obj1["user_key"];
+	
+	dt1.forEach(function(daataa, index, object) {
+		values.push(daataa['key']);
+		
+		})
+	}
+	catch (err)
+	{
+		console.log("keyss:");
+	}
+						
+	//console.log("chkkk:"+values);
+	
+	values.forEach(function(data)
+	{
+	if (ki==data)
+{
+val=true;
+}
+	})
+	}
+	catch (err)
+	{
+		
+	}
+	
+	return val;
+}
+
+
+var keyy=[];
+app.get('/merchant/:name/live', function(req, res){
+	//reading offline file
+	keys=[];
+	
+	//console.log(check_key("thisiskey"));
+	
+	st_data="";
+			fs.readFile('myjsonfile.json', 'utf8', function readFileCallback(err, data){
+						if (err){
+						}
+						else
+						{
+							
+							
+						
+						obj = JSON.parse(data);
+							try{
+							dt=obj[req.params.name];
+							dt.forEach(function(daataa, index, object) {
+								chq=check_key(daataa.key);
+								console.log(chq);
+								if (chq==true)
+								{
+									//console.log("h..");
+									object.splice(index, 1);
+								}
+								//console.log(daataa.key);
+								})
+							dt.reverse();
+							console.log(dt);
+							var html = "<!DOCTYPE html>\n<html>\n    <head>\n    </head>\n <body>\n      <h1>"+req.params.name+"</h1>\n</br>"+st_data+"</body>\n</html>";
+							
+							//res.send(html);
+							res.render('inbox', {
+								dt: dt,
+								name: req.params.name,
+							});
+							}
+							catch (err)
+							{
+								
+							var html = "<!DOCTYPE html>\n<html>\n    <head>\n    </head>\n <body>\n      <h1>"+req.params.name+"</h1>\n</br>"+"No Chat For You"+"</body>\n</html>";
+							res.send(html);
+							//res.sendFile(path.join(__dirname+'/inbox.html'));
+							
+	
+							
+							}	
+						}
+							
+						
+						
+						
+					
+					});	
+	
+
+});
+
+
+
 
 //Static Files
 app.use(express.static('public'));
@@ -76,8 +185,7 @@ var gp="Public";
 		console.log(mr);
 		console.log(gp);
 		console.log(group.name);
-		//storing in json
-		
+
 
 		
 		
@@ -174,10 +282,36 @@ socket.on('typing',function(data)
 				dt.forEach(function(daataa, index, object) {
 						if (daataa.key == userKey)
 						{
-							object.splice(index, 1);
-							//break;
+							//creating new file for keys
+fs.readFile('offline.json', 'utf8', function readFileCallback(err, data){
+if (err){
+//console.log(err);
+var obj = {};
+obj["user_key"]=[{key: daataa.key }];
+var json = JSON.stringify(obj);
+fs.writeFile('offline.json', json, 'utf8',function(err){
+console.log("Error :", err );
+});
+} 
+else {
+obj = JSON.parse(data); //now it an object
+try{
+obj["user_key"].push({key: daataa.key });
+}
+catch (err){
+obj["user_key"]=[{key: daataa.key }];
+}
+var json = JSON.stringify(obj);
+fs.writeFile('offline.json', json, 'utf8',function(err){
+console.log("Error", err );
+}); // write it back 
+}});
+							
+							
+							
+							
 						}
-							//console.log("dada: "+daataa.key);
+							
 						});
 				
 				//save after removing user
@@ -187,9 +321,8 @@ socket.on('typing',function(data)
 					console.log(err);
 				}
 				
-						//console.log("now..");
-						//console.log(dt);
-				//console.log(obj[userM]);
+				
+						
 			}
 		
 		});

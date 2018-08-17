@@ -3,9 +3,18 @@ var socket = io();
 var url_string = window.location.href;
 var url = new URL(url_string);
 var naam = url.searchParams.get("user");
-var room = url.searchParams.get("key");
+
+var room= url.searchParams.get("key");
+if (room==null)
+{
+room = new Date().valueOf();
+}
+console.log(room);
 var merchant= url.searchParams.get("merchant");
-//console.log(c);
+
+
+
+//console.log(gm);
 
 var message=document.getElementById('message');
 //var naam=prompt("Enter Your Name");
@@ -57,16 +66,26 @@ btn.addEventListener('click',function()
 {
 //socket.emit('group', room.value);
 socket.emit('chat',{
+
     name : naam,
-    message : message.value
+    message : message.value,
+	merchant : merchant
+
 });
 message.value="";
 });
 
 //Handling Event
-var chk=0;
+
 socket.on('chat',function(data)
 {
+
+
+				chk=1;
+				if(data.name==data.merchant)
+				{
+					chk=0;
+				}
 
 	htmR='<div class="incoming_msg"><div class="received_msg"><div class="received_withd_msg">';
 	var d = new Date().toLocaleString(); 
@@ -76,15 +95,16 @@ socket.on('chat',function(data)
 	
 	tipe.innerHTML = "";
     neww.innerHTML = "";
-	if (chk == data.name)
+	//chk=data.chk;
+	if (chk == 0)
 	{
 		output.innerHTML += htmR+msgR+addR ;
-		chk=data.name;
+		//chk=data.name;
 	}
 	else
 	{
 		output.innerHTML += htmS+msgR;
-		chk=data.name;
+		//chk=data.name;
 	}
     
     //output.innerHTML += "<b>"+ data.name +" :</b> " + data.message + "</br> ";
